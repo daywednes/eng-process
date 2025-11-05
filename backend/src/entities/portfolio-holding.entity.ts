@@ -72,4 +72,3 @@ export class PortfolioHolding {
   @JoinColumn({ name: 'brokerage_connection_id' })
   brokerageConnection: BrokerageConnection;
 }
-

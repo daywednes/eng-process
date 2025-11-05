@@ -44,11 +44,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(
-    dto: RegisterDto,
-    ipAddress?: string,
-    userAgent?: string,
-  ): Promise<AuthResponse> {
+  async register(dto: RegisterDto, ipAddress?: string, userAgent?: string): Promise<AuthResponse> {
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({
       where: { email: dto.email.toLowerCase() },
@@ -372,4 +368,3 @@ export class AuthService {
     await this.auditLogRepository.save(auditLog);
   }
 }
-

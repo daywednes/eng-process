@@ -42,4 +42,3 @@ export class MessageToolCall {
   @JoinColumn({ name: 'message_id' })
   message: ChatMessage;
 }
-

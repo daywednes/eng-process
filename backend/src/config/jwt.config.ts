@@ -7,4 +7,3 @@ export const getJwtConfig = (configService: ConfigService): JwtModuleOptions => 
     expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '15m',
   },
 });
-

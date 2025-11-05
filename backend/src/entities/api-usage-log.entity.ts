@@ -55,4 +55,3 @@ export class ApiUsageLog {
   @JoinColumn({ name: 'user_id' })
   user: User;
 }
-

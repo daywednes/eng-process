@@ -40,4 +40,3 @@ export class UserSettings {
   @JoinColumn({ name: 'user_id' })
   user: User;
 }
-

@@ -9,7 +9,6 @@ describe('Authentication (e2e)', () => {
   let dataSource: DataSource;
   let accessToken: string;
   let refreshToken: string;
-  let userId: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -17,7 +16,7 @@ describe('Authentication (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Apply same global pipes as in main.ts
     app.useGlobalPipes(
       new ValidationPipe({
@@ -65,9 +64,8 @@ describe('Authentication (e2e)', () => {
           expect(res.body.data.user.lastName).toBe('Test');
           expect(res.body.data.tokens).toHaveProperty('accessToken');
           expect(res.body.data.tokens).toHaveProperty('refreshToken');
-          
+
           // Save for later tests
-          userId = res.body.data.user.id;
           accessToken = res.body.data.tokens.accessToken;
           refreshToken = res.body.data.tokens.refreshToken;
         });
@@ -138,7 +136,7 @@ describe('Authentication (e2e)', () => {
           expect(res.body.data).toHaveProperty('user');
           expect(res.body.data).toHaveProperty('tokens');
           expect(res.body.data.user.email).toBe('e2etest@example.com');
-          
+
           // Update tokens
           accessToken = res.body.data.tokens.accessToken;
           refreshToken = res.body.data.tokens.refreshToken;
@@ -195,9 +193,7 @@ describe('Authentication (e2e)', () => {
     });
 
     it('should fail without authorization token', () => {
-      return request(app.getHttpServer())
-        .get('/api/auth/me')
-        .expect(401);
+      return request(app.getHttpServer()).get('/api/auth/me').expect(401);
     });
 
     it('should fail with invalid token', () => {
@@ -325,10 +321,7 @@ describe('Authentication (e2e)', () => {
     });
 
     it('should fail without refresh token', () => {
-      return request(app.getHttpServer())
-        .post('/api/auth/refresh')
-        .send({})
-        .expect(400);
+      return request(app.getHttpServer()).post('/api/auth/refresh').send({}).expect(400);
     });
   });
 
@@ -345,9 +338,7 @@ describe('Authentication (e2e)', () => {
     });
 
     it('should fail without authorization', () => {
-      return request(app.getHttpServer())
-        .post('/api/auth/logout')
-        .expect(401);
+      return request(app.getHttpServer()).post('/api/auth/logout').expect(401);
     });
   });
 
@@ -441,4 +432,3 @@ describe('Authentication (e2e)', () => {
     });
   });
 });
-

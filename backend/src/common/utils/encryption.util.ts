@@ -24,4 +24,3 @@ export class EncryptionUtil {
     return bytes.toString(CryptoJS.enc.Utf8);
   }
 }
-

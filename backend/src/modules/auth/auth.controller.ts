@@ -117,4 +117,3 @@ export class AuthController {
     return { message: 'Verification email sent' };
   }
 }
-

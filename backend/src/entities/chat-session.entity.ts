@@ -39,4 +39,3 @@ export class ChatSession {
   @OneToMany(() => ChatMessage, (message) => message.session)
   messages: ChatMessage[];
 }
-
