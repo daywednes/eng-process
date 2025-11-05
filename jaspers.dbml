@@ -1,0 +1,352 @@
+// Jaspers AI - Database Schema
+// Use with dbdiagram.io or dbdocs.io
+
+Project jaspers_ai {
+  database_type: 'PostgreSQL'
+  Note: 'Jaspers AI - Personalized Investment Copilot MVP'
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+Enum api_provider {
+  alpaca
+  ibkr
+  anthropic
+  yahoo_finance
+  finnhub
+  edgar
+}
+
+Enum audit_action {
+  login
+  logout
+  register
+  connect_broker
+  disconnect_broker
+  sync_portfolio
+  create_chat_session
+  send_message
+  update_settings
+  password_change
+}
+
+// ============================================
+// AUTHENTICATION & USER MANAGEMENT
+// ============================================
+
+Table users {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  email varchar(255) [unique, not null]
+  password_hash varchar(255) [not null]
+  first_name varchar(100)
+  last_name varchar(100)
+  is_active boolean [default: true]
+  email_verified boolean [default: false]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  last_login_at timestamp
+  
+  indexes {
+    email
+    created_at
+  }
+  
+  Note: 'Core user accounts'
+}
+
+Table user_settings {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  currency varchar(3) [default: 'USD']
+  timezone varchar(50) [default: 'America/New_York']
+  notification_email boolean [default: true]
+  notification_portfolio_changes boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  Note: 'User preferences and settings'
+}
+
+// ============================================
+// BROKERAGE CONNECTIONS
+// ============================================
+
+Table brokerage_connections {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  provider api_provider [not null]
+  account_id varchar(255) // External account ID from broker
+  access_token_encrypted text [not null] // AES-256 encrypted
+  refresh_token_encrypted text // For OAuth refresh
+  token_expires_at timestamp
+  is_active boolean [default: true]
+  last_sync_at timestamp
+  sync_status varchar(50) [default: 'pending'] // 'pending', 'syncing', 'success', 'error'
+  sync_error_message text
+  connected_at timestamp [default: `now()`]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    (user_id, provider) [unique]
+    user_id
+    is_active
+  }
+  
+  Note: 'Stores encrypted brokerage API credentials'
+}
+
+// ============================================
+// PORTFOLIO DATA
+// ============================================
+
+Table portfolio_holdings {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  brokerage_connection_id uuid [ref: > brokerage_connections.id, not null]
+  symbol varchar(20) [not null] // Stock ticker
+  asset_type varchar(50) [default: 'stock'] // 'stock', 'etf', 'crypto', etc.
+  quantity decimal(20, 8) [not null]
+  average_cost decimal(20, 4) // Average purchase price
+  current_price decimal(20, 4)
+  market_value decimal(20, 4) // quantity * current_price
+  unrealized_pl decimal(20, 4) // Profit/Loss
+  unrealized_pl_percent decimal(10, 4)
+  cost_basis decimal(20, 4) // quantity * average_cost
+  last_synced_at timestamp [default: `now()`]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    symbol
+    (user_id, symbol)
+    brokerage_connection_id
+  }
+  
+  Note: 'Current portfolio holdings from brokerages'
+}
+
+Table portfolio_snapshots {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  total_value decimal(20, 4) [not null]
+  cash_balance decimal(20, 4)
+  total_pl decimal(20, 4)
+  total_pl_percent decimal(10, 4)
+  snapshot_date date [not null]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    (user_id, snapshot_date) [unique]
+    user_id
+    snapshot_date
+  }
+  
+  Note: 'Daily snapshots for performance tracking'
+}
+
+// ============================================
+// CHAT & AI INTERACTIONS
+// ============================================
+
+Table chat_sessions {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null]
+  title varchar(255) // Auto-generated or user-defined
+  is_archived boolean [default: false]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    created_at
+  }
+  
+  Note: 'Chat conversation sessions'
+}
+
+Table chat_messages {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  session_id uuid [ref: > chat_sessions.id, not null]
+  role varchar(20) [not null] // 'user', 'assistant', 'system'
+  content text [not null]
+  citations json // Array of citation objects
+  tokens_used integer // For tracking API costs
+  model_used varchar(100) // e.g., 'claude-3-5-sonnet-20241022'
+  processing_time_ms integer
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    session_id
+    created_at
+  }
+  
+  Note: 'Individual messages in chat sessions'
+}
+
+Table message_tool_calls {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  message_id uuid [ref: > chat_messages.id, not null]
+  tool_name varchar(100) [not null] // 'get_stock_price', 'search_edgar', etc.
+  tool_input json [not null]
+  tool_output json
+  execution_time_ms integer
+  status varchar(50) [default: 'success'] // 'success', 'error'
+  error_message text
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    message_id
+  }
+  
+  Note: 'Track Claude tool/function calls for debugging'
+}
+
+// ============================================
+// FINANCIAL DATA CACHE
+// ============================================
+
+Table stock_quotes_cache {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  symbol varchar(20) [not null]
+  price decimal(20, 4) [not null]
+  change decimal(20, 4)
+  change_percent decimal(10, 4)
+  volume bigint
+  market_cap bigint
+  pe_ratio decimal(10, 4)
+  day_high decimal(20, 4)
+  day_low decimal(20, 4)
+  year_high decimal(20, 4)
+  year_low decimal(20, 4)
+  data_source varchar(50) [not null] // 'yahoo', 'finnhub'
+  fetched_at timestamp [default: `now()`]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    symbol
+    (symbol, fetched_at)
+    fetched_at
+  }
+  
+  Note: 'Cache stock quotes to reduce API calls'
+}
+
+Table company_info_cache {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  symbol varchar(20) [unique, not null]
+  name varchar(255)
+  description text
+  sector varchar(100)
+  industry varchar(100)
+  cik varchar(20) // SEC Central Index Key
+  exchange varchar(50)
+  country varchar(100)
+  website varchar(255)
+  data_source varchar(50) [not null]
+  fetched_at timestamp [default: `now()`]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    symbol
+    cik
+  }
+  
+  Note: 'Cache company information'
+}
+
+Table stock_news_cache {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  symbol varchar(20) [not null]
+  headline varchar(500) [not null]
+  summary text
+  source varchar(100)
+  url varchar(500)
+  published_at timestamp [not null]
+  sentiment varchar(20) // 'positive', 'neutral', 'negative'
+  data_source varchar(50) [not null]
+  fetched_at timestamp [default: `now()`]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    symbol
+    published_at
+    (symbol, published_at)
+  }
+  
+  Note: 'Cache financial news articles'
+}
+
+Table edgar_filings_cache {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  cik varchar(20) [not null]
+  symbol varchar(20)
+  filing_type varchar(20) [not null] // '10-K', '10-Q', '8-K', etc.
+  filing_date date [not null]
+  report_period date
+  accession_number varchar(50) [unique, not null]
+  filing_url varchar(500) [not null]
+  html_url varchar(500)
+  extracted_text text // Key sections extracted
+  fetched_at timestamp [default: `now()`]
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    cik
+    symbol
+    filing_type
+    (cik, filing_type, filing_date)
+    accession_number
+  }
+  
+  Note: 'Cache SEC EDGAR filings'
+}
+
+// ============================================
+// ANALYTICS & MONITORING
+// ============================================
+
+Table api_usage_logs {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id]
+  api_provider api_provider [not null]
+  endpoint varchar(255)
+  tokens_used integer
+  cost_usd decimal(10, 6)
+  response_time_ms integer
+  status_code integer
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    api_provider
+    created_at
+  }
+  
+  Note: 'Track API usage and costs'
+}
+
+Table audit_logs {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id]
+  action audit_action [not null]
+  resource_type varchar(50)
+  resource_id uuid
+  ip_address varchar(50)
+  user_agent text
+  metadata json
+  created_at timestamp [default: `now()`]
+  
+  indexes {
+    user_id
+    action
+    created_at
+  }
+  
+  Note: 'Security and activity audit trail'
+}
+
