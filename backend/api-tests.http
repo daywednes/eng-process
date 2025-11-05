@@ -1,0 +1,334 @@
+###
+### Jaspers AI - Authentication API Tests
+### 
+### HOW TO USE:
+### 1. Install "REST Client" extension in VS Code/Cursor
+### 2. Open this file in VS Code/Cursor
+### 3. Click "Send Request" link above each request
+### 4. Copy the tokens from responses and paste them in the variables below
+###
+
+### Configuration
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### After testing, paste your tokens here:
+# Copy accessToken from login/register response
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxZThlMGYyYy1mYzNiLTQ4MDItYTZmMy04MTE5MGU5MjM0NGUiLCJlbWFpbCI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzYyMzI4ODk3LCJleHAiOjE3NjIzMjk3OTd9.1u4TV1C3KEKwXYCdbT3JsvHw56zmUIQWNM44TcWybys
+
+# Copy refreshToken from login/register response  
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxZThlMGYyYy1mYzNiLTQ4MDItYTZmMy04MTE5MGU5MjM0NGUiLCJlbWFpbCI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwiaWF0IjoxNzYyMzI4ODk3LCJleHAiOjE3NjI5MzM2OTd9.uN3GYNTU3APzjXBg7ahfDWQinznuhgTymT4AHe2pgK4
+
+# Copy from console logs after forgot-password
+@resetToken = PUT_RESET_TOKEN_HERE
+
+# Copy from console logs after resend-verification
+@verificationToken = PUT_VERIFICATION_TOKEN_HERE
+
+################################################################################
+### 1. REGISTER - Create a new user account
+################################################################################
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePass123",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+###
+### Expected Response:
+### {
+###   "success": true,
+###   "data": {
+###     "user": { ... },
+###     "tokens": {
+###       "accessToken": "eyJ...",
+###       "refreshToken": "eyJ..."
+###     }
+###   }
+### }
+###
+### ⚠️ IMPORTANT: Copy the accessToken and refreshToken from the response above
+###              and paste them in the @accessToken and @refreshToken variables at the top!
+
+################################################################################
+### 2. LOGIN - Authenticate existing user
+################################################################################
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePass123"
+}
+
+###
+### Expected Response: Same as register (user object + tokens)
+### ⚠️ Copy the tokens and update the variables at the top!
+
+################################################################################
+### 3. GET PROFILE - Get current user information (requires auth)
+################################################################################
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{accessToken}}
+
+###
+### Expected Response:
+### {
+###   "success": true,
+###   "data": {
+###     "id": "uuid",
+###     "email": "john.doe@example.com",
+###     "firstName": "John",
+###     "lastName": "Doe",
+###     "isActive": true,
+###     "emailVerified": false,
+###     ...
+###   }
+### }
+
+################################################################################
+### 4. UPDATE PROFILE - Update user information (requires auth)
+################################################################################
+PATCH {{baseUrl}}/api/auth/me
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Jane",
+  "lastName": "Smith"
+}
+
+###
+### Expected Response: Updated user object
+
+################################################################################
+### 5. CHANGE PASSWORD - Change user password (requires auth)
+################################################################################
+POST {{baseUrl}}/api/auth/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "currentPassword": "SecurePass123",
+  "newPassword": "NewSecurePass123"
+}
+
+###
+### Expected Response:
+### {
+###   "success": true,
+###   "data": {
+###     "message": "Password changed successfully"
+###   }
+### }
+
+################################################################################
+### 6. REFRESH TOKEN - Get new access token
+################################################################################
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+### Expected Response: New access and refresh tokens
+### ⚠️ Update the @accessToken variable with the new token!
+
+################################################################################
+### 7. LOGOUT - End user session (requires auth)
+################################################################################
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{accessToken}}
+
+###
+### Expected Response:
+### {
+###   "success": true,
+###   "data": {
+###     "message": "Logged out successfully"
+###   }
+### }
+
+################################################################################
+### 8. FORGOT PASSWORD - Request password reset
+################################################################################
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@example.com"
+}
+
+###
+### Expected Response:
+### {
+###   "success": true,
+###   "data": {
+###     "message": "If the email exists, a password reset link has been sent"
+###   }
+### }
+###
+### ⚠️ Check the server console logs for the reset token
+###    Look for: "Password reset token for john.doe@example.com: eyJ..."
+###    Copy that token and paste it in @resetToken variable at the top
+
+################################################################################
+### 9. RESET PASSWORD - Reset password with token
+################################################################################
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: {{contentType}}
+
+{
+  "token": "{{resetToken}}",
+  "newPassword": "ResetPassword123"
+}
+
+###
+### Expected Response:
+### {
+###   "success": true,
+###   "data": {
+###     "message": "Password reset successfully"
+###   }
+### }
+
+################################################################################
+### 10. VERIFY EMAIL - Verify user email address
+################################################################################
+POST {{baseUrl}}/api/auth/verify-email
+Content-Type: {{contentType}}
+
+{
+  "token": "{{verificationToken}}"
+}
+
+###
+### Expected Response:
+### {
+###   "success": true,
+###   "data": {
+###     "message": "Email verified successfully"
+###   }
+### }
+###
+### ⚠️ To get a verification token, first call the resend verification endpoint below
+
+################################################################################
+### 11. RESEND VERIFICATION EMAIL (requires auth)
+################################################################################
+POST {{baseUrl}}/api/auth/resend-verification
+Authorization: Bearer {{accessToken}}
+
+###
+### Expected Response:
+### {
+###   "success": true,
+###   "data": {
+###     "message": "Verification email sent"
+###   }
+### }
+###
+### ⚠️ Check the server console logs for the verification token
+###    Look for: "Email verification token for john.doe@example.com: eyJ..."
+###    Copy that token and paste it in @verificationToken variable at the top
+
+################################################################################
+### 12. TEST WITH DIFFERENT USER
+################################################################################
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "alice@example.com",
+  "password": "AlicePass123",
+  "firstName": "Alice",
+  "lastName": "Wonder"
+}
+
+################################################################################
+### 13. TEST ERROR - Invalid credentials
+################################################################################
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@example.com",
+  "password": "WrongPassword"
+}
+
+###
+### Expected Response: 401 Unauthorized
+### {
+###   "success": false,
+###   "error": {
+###     "code": "UnauthorizedException",
+###     "message": "Invalid credentials"
+###   }
+### }
+
+################################################################################
+### 14. TEST ERROR - Weak password
+################################################################################
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com",
+  "password": "weak",
+  "firstName": "Test"
+}
+
+###
+### Expected Response: 400 Bad Request with validation errors
+
+################################################################################
+### 15. TEST ERROR - Unauthorized access (no token)
+################################################################################
+GET {{baseUrl}}/api/auth/me
+
+###
+### Expected Response: 401 Unauthorized
+
+################################################################################
+### QUICK TEST SEQUENCE
+### Run these in order to test the complete flow:
+################################################################################
+
+### Step 1: Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "quicktest@example.com",
+  "password": "QuickTest123",
+  "firstName": "Quick",
+  "lastName": "Test"
+}
+
+### Step 2: Copy the accessToken from above response and paste it here
+@quickAccessToken = PASTE_TOKEN_HERE
+
+### Step 3: Get Profile
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{quickAccessToken}}
+
+### Step 4: Update Profile
+PATCH {{baseUrl}}/api/auth/me
+Authorization: Bearer {{quickAccessToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Updated",
+  "lastName": "Name"
+}
+
+### Step 5: Logout
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{quickAccessToken}}
+

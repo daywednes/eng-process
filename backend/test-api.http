@@ -1,0 +1,108 @@
+### Jaspers AI - Authentication API Tests
+### Use with REST Client extension in VS Code or any HTTP client
+
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### Variables (update these after testing)
+@accessToken = 
+@refreshToken = 
+@resetToken = 
+@verificationToken = 
+
+###
+### 1. Register a new user
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePass123",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+###
+### 2. Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePass123"
+}
+
+###
+### 3. Get current user profile (requires access token)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{accessToken}}
+
+###
+### 4. Update profile (requires access token)
+PATCH {{baseUrl}}/api/auth/me
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Jane",
+  "lastName": "Smith"
+}
+
+###
+### 5. Change password (requires access token)
+POST {{baseUrl}}/api/auth/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "currentPassword": "SecurePass123",
+  "newPassword": "NewSecurePass123"
+}
+
+###
+### 6. Refresh access token
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+### 7. Logout (requires access token)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{accessToken}}
+
+###
+### 8. Forgot password
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: {{contentType}}
+
+{
+  "email": "john.doe@example.com"
+}
+
+###
+### 9. Reset password (use token from console logs)
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: {{contentType}}
+
+{
+  "token": "{{resetToken}}",
+  "newPassword": "ResetPassword123"
+}
+
+###
+### 10. Verify email (use token from console logs)
+POST {{baseUrl}}/api/auth/verify-email
+Content-Type: {{contentType}}
+
+{
+  "token": "{{verificationToken}}"
+}
+
+###
+### 11. Resend verification email (requires access token)
+POST {{baseUrl}}/api/auth/resend-verification
+Authorization: Bearer {{accessToken}}
+
