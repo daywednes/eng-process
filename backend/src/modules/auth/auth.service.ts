@@ -87,6 +87,9 @@ export class AuthService {
     // Generate tokens
     const tokens = await this.generateTokens(savedUser);
 
+    // Remove password hash from response
+    delete (savedUser as any).passwordHash;
+
     return {
       user: savedUser,
       tokens,
@@ -124,6 +127,9 @@ export class AuthService {
     // Generate tokens
     const tokens = await this.generateTokens(user);
 
+    // Remove password hash from response
+    delete (user as any).passwordHash;
+
     return {
       user,
       tokens,
@@ -132,6 +138,29 @@ export class AuthService {
 
   async refreshToken(user: User): Promise<AuthTokens> {
     return this.generateTokens(user);
+  }
+
+  async refreshTokenWithToken(refreshToken: string): Promise<AuthTokens> {
+    try {
+      // Verify the refresh token
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      });
+
+      // Get the user
+      const user = await this.userRepository.findOne({
+        where: { id: payload.sub, isActive: true },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not found or inactive');
+      }
+
+      // Generate new tokens
+      return this.generateTokens(user);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
 
   async logout(userId: string, ipAddress?: string, userAgent?: string): Promise<void> {
@@ -189,6 +218,9 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
+    // Remove password hash from response
+    delete (user as any).passwordHash;
+
     return user;
   }
 
@@ -221,7 +253,12 @@ export class AuthService {
       user.lastName = dto.lastName;
     }
 
-    return this.userRepository.save(user);
+    const updatedUser = await this.userRepository.save(user);
+
+    // Remove password hash from response
+    delete (updatedUser as any).passwordHash;
+
+    return updatedUser;
   }
 
   async forgotPassword(dto: ForgotPasswordDto): Promise<void> {
