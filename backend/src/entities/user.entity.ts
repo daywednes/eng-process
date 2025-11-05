@@ -71,4 +71,3 @@ export class User {
   @OneToMany(() => ApiUsageLog, (log) => log.user)
   apiUsageLogs: ApiUsageLog[];
 }
-

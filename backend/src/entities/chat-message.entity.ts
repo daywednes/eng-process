@@ -47,4 +47,3 @@ export class ChatMessage {
   @OneToMany(() => MessageToolCall, (toolCall) => toolCall.message)
   toolCalls: MessageToolCall[];
 }
-

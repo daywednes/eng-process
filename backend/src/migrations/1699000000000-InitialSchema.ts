@@ -86,9 +86,15 @@ export class InitialSchema1699000000000 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "idx_brokerage_connections_user_id" ON "brokerage_connections" ("user_id")`);
-    await queryRunner.query(`CREATE INDEX "idx_brokerage_connections_is_active" ON "brokerage_connections" ("is_active")`);
-    await queryRunner.query(`CREATE UNIQUE INDEX "idx_brokerage_connections_user_provider" ON "brokerage_connections" ("user_id", "provider")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_brokerage_connections_user_id" ON "brokerage_connections" ("user_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_brokerage_connections_is_active" ON "brokerage_connections" ("is_active")`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "idx_brokerage_connections_user_provider" ON "brokerage_connections" ("user_id", "provider")`,
+    );
 
     // Create portfolio_holdings table
     await queryRunner.query(`
@@ -113,10 +119,18 @@ export class InitialSchema1699000000000 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "idx_portfolio_holdings_user_id" ON "portfolio_holdings" ("user_id")`);
-    await queryRunner.query(`CREATE INDEX "idx_portfolio_holdings_symbol" ON "portfolio_holdings" ("symbol")`);
-    await queryRunner.query(`CREATE INDEX "idx_portfolio_holdings_user_symbol" ON "portfolio_holdings" ("user_id", "symbol")`);
-    await queryRunner.query(`CREATE INDEX "idx_portfolio_holdings_brokerage" ON "portfolio_holdings" ("brokerage_connection_id")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_portfolio_holdings_user_id" ON "portfolio_holdings" ("user_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_portfolio_holdings_symbol" ON "portfolio_holdings" ("symbol")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_portfolio_holdings_user_symbol" ON "portfolio_holdings" ("user_id", "symbol")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_portfolio_holdings_brokerage" ON "portfolio_holdings" ("brokerage_connection_id")`,
+    );
 
     // Create portfolio_snapshots table
     await queryRunner.query(`
@@ -133,9 +147,15 @@ export class InitialSchema1699000000000 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "idx_portfolio_snapshots_user_id" ON "portfolio_snapshots" ("user_id")`);
-    await queryRunner.query(`CREATE INDEX "idx_portfolio_snapshots_snapshot_date" ON "portfolio_snapshots" ("snapshot_date")`);
-    await queryRunner.query(`CREATE UNIQUE INDEX "idx_portfolio_snapshots_user_date" ON "portfolio_snapshots" ("user_id", "snapshot_date")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_portfolio_snapshots_user_id" ON "portfolio_snapshots" ("user_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_portfolio_snapshots_snapshot_date" ON "portfolio_snapshots" ("snapshot_date")`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "idx_portfolio_snapshots_user_date" ON "portfolio_snapshots" ("user_id", "snapshot_date")`,
+    );
 
     // Create chat_sessions table
     await queryRunner.query(`
@@ -150,8 +170,12 @@ export class InitialSchema1699000000000 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "idx_chat_sessions_user_id" ON "chat_sessions" ("user_id")`);
-    await queryRunner.query(`CREATE INDEX "idx_chat_sessions_created_at" ON "chat_sessions" ("created_at")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_chat_sessions_user_id" ON "chat_sessions" ("user_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_chat_sessions_created_at" ON "chat_sessions" ("created_at")`,
+    );
 
     // Create chat_messages table
     await queryRunner.query(`
@@ -169,8 +193,12 @@ export class InitialSchema1699000000000 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "idx_chat_messages_session_id" ON "chat_messages" ("session_id")`);
-    await queryRunner.query(`CREATE INDEX "idx_chat_messages_created_at" ON "chat_messages" ("created_at")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_chat_messages_session_id" ON "chat_messages" ("session_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_chat_messages_created_at" ON "chat_messages" ("created_at")`,
+    );
 
     // Create message_tool_calls table
     await queryRunner.query(`
@@ -188,7 +216,9 @@ export class InitialSchema1699000000000 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "idx_message_tool_calls_message_id" ON "message_tool_calls" ("message_id")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_message_tool_calls_message_id" ON "message_tool_calls" ("message_id")`,
+    );
 
     // Create audit_logs table
     await queryRunner.query(`
@@ -208,7 +238,9 @@ export class InitialSchema1699000000000 implements MigrationInterface {
 
     await queryRunner.query(`CREATE INDEX "idx_audit_logs_user_id" ON "audit_logs" ("user_id")`);
     await queryRunner.query(`CREATE INDEX "idx_audit_logs_action" ON "audit_logs" ("action")`);
-    await queryRunner.query(`CREATE INDEX "idx_audit_logs_created_at" ON "audit_logs" ("created_at")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_audit_logs_created_at" ON "audit_logs" ("created_at")`,
+    );
 
     // Create api_usage_logs table
     await queryRunner.query(`
@@ -226,9 +258,15 @@ export class InitialSchema1699000000000 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "idx_api_usage_logs_user_id" ON "api_usage_logs" ("user_id")`);
-    await queryRunner.query(`CREATE INDEX "idx_api_usage_logs_api_provider" ON "api_usage_logs" ("api_provider")`);
-    await queryRunner.query(`CREATE INDEX "idx_api_usage_logs_created_at" ON "api_usage_logs" ("created_at")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_api_usage_logs_user_id" ON "api_usage_logs" ("user_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_api_usage_logs_api_provider" ON "api_usage_logs" ("api_provider")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_api_usage_logs_created_at" ON "api_usage_logs" ("created_at")`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -249,4 +287,3 @@ export class InitialSchema1699000000000 implements MigrationInterface {
     await queryRunner.query(`DROP TYPE IF EXISTS "api_provider"`);
   }
 }
-

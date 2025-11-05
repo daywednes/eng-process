@@ -39,4 +39,3 @@ export class PortfolioSnapshot {
   @JoinColumn({ name: 'user_id' })
   user: User;
 }
-

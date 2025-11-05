@@ -3,7 +3,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { User } from '../../entities/user.entity';
@@ -12,11 +11,6 @@ import { AuditLog, AuditAction } from '../../entities/audit-log.entity';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let userRepository: Repository<User>;
-  let userSettingsRepository: Repository<UserSettings>;
-  let auditLogRepository: Repository<AuditLog>;
-  let jwtService: JwtService;
-  let configService: ConfigService;
 
   const mockUser = {
     id: 'test-user-id',
@@ -92,13 +86,6 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    userRepository = module.get<Repository<User>>(getRepositoryToken(User));
-    userSettingsRepository = module.get<Repository<UserSettings>>(
-      getRepositoryToken(UserSettings),
-    );
-    auditLogRepository = module.get<Repository<AuditLog>>(getRepositoryToken(AuditLog));
-    jwtService = module.get<JwtService>(JwtService);
-    configService = module.get<ConfigService>(ConfigService);
 
     // Reset mocks
     jest.clearAllMocks();
@@ -124,7 +111,9 @@ describe('AuthService', () => {
       mockUserSettingsRepository.save.mockResolvedValue({});
       mockAuditLogRepository.create.mockReturnValue({});
       mockAuditLogRepository.save.mockResolvedValue({});
-      mockJwtService.signAsync.mockResolvedValueOnce('access-token').mockResolvedValueOnce('refresh-token');
+      mockJwtService.signAsync
+        .mockResolvedValueOnce('access-token')
+        .mockResolvedValueOnce('refresh-token');
 
       const result = await service.register(registerDto);
 
@@ -197,7 +186,9 @@ describe('AuthService', () => {
       mockUserRepository.save.mockResolvedValue(userWithHashedPassword);
       mockAuditLogRepository.create.mockReturnValue({});
       mockAuditLogRepository.save.mockResolvedValue({});
-      mockJwtService.signAsync.mockResolvedValueOnce('access-token').mockResolvedValueOnce('refresh-token');
+      mockJwtService.signAsync
+        .mockResolvedValueOnce('access-token')
+        .mockResolvedValueOnce('refresh-token');
 
       const result = await service.login(loginDto);
 
@@ -395,7 +386,9 @@ describe('AuthService', () => {
 
   describe('refreshToken', () => {
     it('should generate new tokens', async () => {
-      mockJwtService.signAsync.mockResolvedValueOnce('new-access-token').mockResolvedValueOnce('new-refresh-token');
+      mockJwtService.signAsync
+        .mockResolvedValueOnce('new-access-token')
+        .mockResolvedValueOnce('new-refresh-token');
 
       const result = await service.refreshToken(mockUser as unknown as User);
 
@@ -424,4 +417,3 @@ describe('AuthService', () => {
     });
   });
 });
-

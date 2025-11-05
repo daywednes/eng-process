@@ -67,4 +67,3 @@ export class BrokerageConnection {
   @OneToMany(() => PortfolioHolding, (holding) => holding.brokerageConnection)
   holdings: PortfolioHolding[];
 }
-
