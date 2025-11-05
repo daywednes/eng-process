@@ -188,16 +188,26 @@ jobs:
       - name: Check for vulnerabilities
         working-directory: backend
         run: |
+          echo "🔍 Checking for security vulnerabilities..."
           AUDIT_RESULT=$(npm audit --json)
           CRITICAL=$(echo $AUDIT_RESULT | jq '.metadata.vulnerabilities.critical // 0')
           HIGH=$(echo $AUDIT_RESULT | jq '.metadata.vulnerabilities.high // 0')
+          MODERATE=$(echo $AUDIT_RESULT | jq '.metadata.vulnerabilities.moderate // 0')
+          LOW=$(echo $AUDIT_RESULT | jq '.metadata.vulnerabilities.low // 0')
+          
+          echo "📊 Vulnerability Summary:"
+          echo "  Critical: $CRITICAL"
+          echo "  High: $HIGH"
+          echo "  Moderate: $MODERATE"
+          echo "  Low: $LOW"
+          echo ""
           
           if [ $CRITICAL -gt 0 ] || [ $HIGH -gt 0 ]; then
-            echo "⚠️ Found $CRITICAL critical and $HIGH high vulnerabilities"
+            echo "❌ Found $CRITICAL critical and $HIGH high vulnerabilities"
             echo "Please run 'npm audit fix' to resolve them"
             exit 1
           else
-            echo "✅ No critical or high vulnerabilities found"
+            echo "✅ No critical or high vulnerabilities found (Low/Moderate vulnerabilities are acceptable)"
           fi
 
   summary:
